@@ -24,6 +24,7 @@ public class MinesweeperApplication extends Application {
 
     private final Tile[][] grid = new Tile[X_TILES][Y_TILES];
     private Scene scene;
+    private boolean firstClick = true;
 
     private Parent createContent(){
         Pane root = new Pane();
@@ -31,27 +32,11 @@ public class MinesweeperApplication extends Application {
 
         for(int y = 0; y < Y_TILES; y++){
             for(int x = 0; x < X_TILES; x++){
-                Tile tile = new Tile(x, y, Math.random() < 0.2);
+                Tile tile = new Tile(x, y, false);
                 grid[x][y] = tile;
                 root.getChildren().add(tile);
             }
         }
-
-        for(int y = 0; y < Y_TILES; y++){
-            for(int x = 0; x < X_TILES; x++){
-                Tile tile = grid[x][y];
-
-                if(tile.hasBomb){
-                    continue;
-                }
-
-                long bombs = getNeighbours(tile).stream().filter(t -> t.hasBomb).count();
-
-                if(bombs > 0)
-                    tile.text.setText(String.valueOf(bombs));
-            }
-        }
-
         return root;
     }
 
@@ -88,9 +73,41 @@ public class MinesweeperApplication extends Application {
         return neighbours;
     }
 
+    private void placeBombs(Tile firstClicked){
+        int bombsPlaced = 0;
+        int totalBombs = (int) (X_TILES * Y_TILES * 0.2);
+
+        while(bombsPlaced < totalBombs){
+            int x = (int) (Math.random() * X_TILES);
+            int y = (int) (Math.random() * Y_TILES);
+            Tile tile = grid[x][y];
+
+            // Ensure the bomb is not on the first clicked tile or its neighbours
+            if(tile != firstClicked && !tile.hasBomb && !getNeighbours(firstClicked).contains(tile)){
+                tile.hasBomb = true;
+                tile.text.setText("X");
+                bombsPlaced++;
+            }
+        }
+
+        //Calculate bomb counts for all tiles after placing bombs
+        for(int y = 0; y < Y_TILES; y++){
+            for(int x = 0; x < X_TILES; x++){
+                Tile tile = grid[x][y];
+
+                if(tile.hasBomb) continue;
+
+                long bombs = getNeighbours(tile).stream().filter(t -> t.hasBomb).count();
+                if(bombs > 0){
+                    tile.text.setText(String.valueOf(bombs));
+                }
+            }
+        }
+    }
+
     private class Tile extends StackPane {
         private final int x, y;
-        private final boolean hasBomb;
+        private boolean hasBomb;
         private boolean isOpen = false;
 
         private final Rectangle border = new Rectangle(TILE_SIZE - 2, TILE_SIZE - 2);
@@ -112,28 +129,36 @@ public class MinesweeperApplication extends Application {
             setTranslateX(x * TILE_SIZE);
             setTranslateY(y * TILE_SIZE);
 
-            setOnMouseClicked(_ ->open());
+            setOnMouseClicked(_ -> open());
 
         }
 
         public void open() {
-            if (isOpen)
-                return;
+            if (isOpen) return;
 
-            if(hasBomb){
-                System.out.println("Game Over.");
-                scene.setRoot(createContent());
+            //Handle first click to ensure it is an empty tile
+            if (firstClick) {
+                firstClick = false;
+                placeBombs(this);
             }
 
             isOpen = true;
             text.setVisible(true);
             border.setFill(null);
 
-            if(text.getText().isEmpty()){
+            if (hasBomb) {
+                System.out.println("Game Over.");
+                firstClick = true;
+                scene.setRoot(createContent());
+            }
+
+            if (text.getText().isEmpty()) {
                 getNeighbours(this).forEach(Tile::open);
             }
         }
     }
+
+
 
     @Override
     public void start(Stage stage){

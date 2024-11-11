@@ -3,16 +3,17 @@ package minesweeper.minesweeper;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 import java.util.ArrayList;
 import java.util.List;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 public class MinesweeperApplication extends Application {
 
@@ -26,9 +27,42 @@ public class MinesweeperApplication extends Application {
     private Scene scene;
     private boolean firstClick = true;
 
+    private int remainingBombs;
+    private final Text bombCounter = new Text();
+
+    private final Text timerText = new Text();
+    private Timeline timeline;
+    private int secondsElapsed;
+
     private Parent createContent(){
+        VBox layout = new VBox();
         Pane root = new Pane();
         root.setPrefSize(width, height);
+
+        // Initialize bomb count and counter display
+        remainingBombs = (int) (X_TILES * Y_TILES * 0.2);
+        bombCounter.setFont(Font.font(18));
+        bombCounter.setText("Bombs: " + remainingBombs);
+
+        // Initialize timer
+        secondsElapsed = 0;
+        timerText.setFont(Font.font(18));
+        timerText.setText("Time: " + secondsElapsed);
+
+        HBox header = new HBox();
+        header.setSpacing(10);
+        header.setPrefWidth(width);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        header.getChildren().addAll(bombCounter, spacer, timerText);
+
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), _ -> {
+            secondsElapsed++;
+            timerText.setText("Time: " + secondsElapsed);
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE);
 
         firstClick = true;
 
@@ -39,7 +73,10 @@ public class MinesweeperApplication extends Application {
                 root.getChildren().add(tile);
             }
         }
-        return root;
+
+        layout.getChildren().addAll(header, root);
+
+        return layout;
     }
 
     private List<Tile> getNeighbours(Tile tile) {
@@ -151,6 +188,13 @@ public class MinesweeperApplication extends Application {
             isMarked = !isMarked;
             markText.setVisible(isMarked);
 
+            if(isMarked){
+               remainingBombs--;
+            } else {
+                remainingBombs++;
+            }
+            bombCounter.setText("Bombs: " + remainingBombs);
+
             border.setStroke(isMarked ? Color.ORANGERED : Color.LIGHTGRAY);
         }
 
@@ -161,6 +205,7 @@ public class MinesweeperApplication extends Application {
             if (firstClick) {
                 firstClick = false;
                 placeBombs(this);
+                timeline.play();
             }
 
             isOpen = true;
@@ -169,22 +214,24 @@ public class MinesweeperApplication extends Application {
 
             if (hasBomb) {
                 System.out.println("Game Over.");
+                timeline.stop();
                 scene.setRoot(createContent());
                 return;
             }
 
             if (text.getText().isEmpty()) {
-                getNeighbours(this).forEach(Tile::open);
+                getNeighbours(this).forEach(tile -> {
+                    if(!tile.isOpen && !tile.hasBomb){
+                        tile.open();
+                    }
+                });
             }
         }
     }
 
-
-
     @Override
     public void start(Stage stage){
         scene = new Scene(createContent());
-
         stage.setScene(scene);
         stage.show();
     }

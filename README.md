@@ -1,6 +1,6 @@
-# Minesweeper with a Twist
+# Minesweeper with Leaderboard
 
-A unique take on the classic Minesweeper game, featuring exciting new mechanics like extra lives and a special "big click" ability to enhance the gameplay experience.
+A classic Minesweeper game reimagined as a full-stack application with a leaderboard to track players' fastest completion times. Challenge yourself to complete the game as quickly as possible and see how you rank!
 
 ## Table of Contents
 - [Features](#features)
@@ -13,14 +13,19 @@ A unique take on the classic Minesweeper game, featuring exciting new mechanics 
 ## Features
 
 - **Classic Minesweeper Gameplay**: Enjoy the traditional Minesweeper mechanics with hidden mines, number hints, and strategic clicks.
-- **Extra Lives**: Earn extra lives by uncovering a set number of empty squares, allowing you to survive accidental mine clicks and keep the game going.
-- **Big Click Ability**: Unlock a special power-up that reveals a 3x3 area around your selected tile (excluding mines), providing a helpful boost when you’re stuck or want to clear more space quickly.
+- **Leaderboard for Fastest Times**: Compete with others by finishing the game in the shortest time. Your best time is recorded and displayed on the leaderboard.
+- **User Accounts**: Optionally, create an account to save and track your best times on the leaderboard.
 
 ## Gameplay
 
-This version of Minesweeper takes the core elements of the classic game and adds new layers of strategy and fun. Extra lives give you a buffer against mistakes, while the big click feature offers a tactical advantage in high-risk situations.
+This version of Minesweeper focuses on the classic mechanics with the addition of a leaderboard to make the game more competitive. Players aim to complete the game as quickly as possible to secure a spot on the leaderboard.
 
 ## Installation
+
+### Prerequisites
+- **Docker**: Make sure you have Docker installed on your system. You can download it from [here](https://www.docker.com/get-started).
+
+### Setup Instructions
 
 1. **Clone the Repository**:
    ```bash
@@ -28,15 +33,28 @@ This version of Minesweeper takes the core elements of the classic game and adds
 2. **Navigate to the Project Directory**:
    ```bash
    cd Minesweeper
-3. **Open in Your IDE**: Open the project in your preferred Java IDE.
-4. **Run the Game**: Build and run the project from your IDE.
+   ```
+3. **Start the Application with Docker**:
+   - Run the following command to build and start the application:
+     ```bash
+     docker-compose up --build
+     ```
+   - This command will build the Docker images and start containers for the frontend, backend, and database.
+4. **Access the Game**:
+   - Once the containers are running, open your browser and go to `http://localhost:3000` (or the port configured in your `docker-compose.yml`) to start playing Minesweeper with the leaderboard feature.
+  
+### Stopping the Application
+
+To stop the application and remove the containers, use:
+   ```bash
+     docker-compose up --build
+   ```
 
 ## How to Play
 
 1. **Objective**: Uncover all safe squares without hitting a mine. Each number revealed represents the count of adjacent mines.
-2. **Extra Lives**: Every time you uncover enough safe squares, you earn an extra life, which can save you from one mine click.
-3. **Big Click**: After a certain number of successful reveals, gain the ability to clear a 3x3 area (excluding mines) to help advance faster.
-4. **Win Condition**: Clear the entire board without detonating a mine.
+2. **Win Condition**: Clear the entire board without detonating a mine.
+3. **Submit Your Time**: When you win, you can submit your time to the leaderboard.
 
 ## Contributing
 

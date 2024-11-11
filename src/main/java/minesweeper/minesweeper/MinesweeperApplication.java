@@ -1,8 +1,10 @@
 package minesweeper.minesweeper;
 
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -27,6 +29,7 @@ public class MinesweeperApplication extends Application {
     private Scene scene;
     private boolean firstClick = true;
 
+    private int totalBombs;
     private int remainingBombs;
     private final Text bombCounter = new Text();
 
@@ -34,13 +37,16 @@ public class MinesweeperApplication extends Application {
     private Timeline timeline;
     private int secondsElapsed;
 
+    private int openedTiles;
+
     private Parent createContent(){
         VBox layout = new VBox();
         Pane root = new Pane();
         root.setPrefSize(width, height);
 
         // Initialize bomb count and counter display
-        remainingBombs = (int) (X_TILES * Y_TILES * 0.2);
+        totalBombs = (int) (X_TILES * Y_TILES * 0.2);
+        remainingBombs = totalBombs;
         bombCounter.setFont(Font.font(18));
         bombCounter.setText("Bombs: " + remainingBombs);
 
@@ -65,6 +71,7 @@ public class MinesweeperApplication extends Application {
         timeline.setCycleCount(Timeline.INDEFINITE);
 
         firstClick = true;
+        openedTiles = 0;
 
         for(int y = 0; y < Y_TILES; y++){
             for(int x = 0; x < X_TILES; x++){
@@ -82,20 +89,20 @@ public class MinesweeperApplication extends Application {
     private List<Tile> getNeighbours(Tile tile) {
         List<Tile> neighbours = new ArrayList<>();
 
-        // Surrounding tiles (tile is X):
-        // abc
-        // dXe
-        // fgh
+        // Surrounding tiles
+        // 123
+        // 4X5
+        // 678
 
         int[] points = new int[] {
-                -1, 1,  // a
-                0, 1,   // b
-                1, 1,   // c
-                -1, 0,  // d
-                1, 0,   // e
-                -1, -1, // f
-                0, -1,  // g
-                1, -1   // h
+                -1, 1,  // 1
+                0, 1,   // 2
+                1, 1,   // 3
+                -1, 0,  // 4
+                1, 0,   // 5
+                -1, -1, // 6
+                0, -1,  // 7
+                1, -1   // 8
         };
 
         for(int i = 0; i < points.length; i++){
@@ -114,7 +121,6 @@ public class MinesweeperApplication extends Application {
 
     private void placeBombs(Tile firstClicked){
         int bombsPlaced = 0;
-        int totalBombs = (int) (X_TILES * Y_TILES * 0.2);
 
         while(bombsPlaced < totalBombs){
             int x = (int) (Math.random() * X_TILES);
@@ -209,13 +215,19 @@ public class MinesweeperApplication extends Application {
             }
 
             isOpen = true;
+            openedTiles++;
             text.setVisible(true);
             border.setFill(null);
 
             if (hasBomb) {
-                System.out.println("Game Over.");
                 timeline.stop();
-                scene.setRoot(createContent());
+                showEndGameMessage("Game Over! You hit a bomb.", false);
+                return;
+            }
+
+            if (openedTiles == X_TILES * Y_TILES - totalBombs) {
+                timeline.stop();
+                showEndGameMessage("Congratulations! You won!", true);
                 return;
             }
 
@@ -228,6 +240,43 @@ public class MinesweeperApplication extends Application {
             }
         }
     }
+
+    private void showEndGameMessage(String message, boolean isWin) {
+        // Stop the timer if it's running
+        if (timeline != null) {
+            timeline.stop();
+        }
+
+        // Create a VBox to hold the message and play again button
+        VBox endGameLayout = new VBox(20); // 20 is the spacing between elements
+        endGameLayout.setPrefSize(width, height);
+        endGameLayout.setAlignment(Pos.CENTER); // Center elements in VBox
+        endGameLayout.setStyle("-fx-background-color: white;"); // Set background color
+
+        // Message text
+        String fullMessage = message;
+        if (isWin) {
+            fullMessage += "\nTime Taken: " + secondsElapsed + " seconds";
+        }
+
+        Text endMessage = new Text(fullMessage);
+        endMessage.setFont(Font.font(24));
+        endMessage.setFill(isWin ? Color.GREEN : Color.RED);
+
+        // Play Again button
+        Button playAgainButton = new Button("Play Again");
+        playAgainButton.setOnAction(_ -> {
+            // Reset the game
+            scene.setRoot(createContent());
+        });
+
+        // Add the message and button to the VBox
+        endGameLayout.getChildren().addAll(endMessage, playAgainButton);
+
+        // Set the VBox as the new root of the scene
+        scene.setRoot(endGameLayout);
+    }
+
 
     @Override
     public void start(Stage stage){

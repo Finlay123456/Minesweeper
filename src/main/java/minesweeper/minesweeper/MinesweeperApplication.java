@@ -30,6 +30,8 @@ public class MinesweeperApplication extends Application {
         Pane root = new Pane();
         root.setPrefSize(width, height);
 
+        firstClick = true;
+
         for(int y = 0; y < Y_TILES; y++){
             for(int x = 0; x < X_TILES; x++){
                 Tile tile = new Tile(x, y, false);
@@ -85,7 +87,6 @@ public class MinesweeperApplication extends Application {
             // Ensure the bomb is not on the first clicked tile or its neighbours
             if(tile != firstClicked && !tile.hasBomb && !getNeighbours(firstClicked).contains(tile)){
                 tile.hasBomb = true;
-                tile.text.setText("X");
                 bombsPlaced++;
             }
         }
@@ -109,9 +110,11 @@ public class MinesweeperApplication extends Application {
         private final int x, y;
         private boolean hasBomb;
         private boolean isOpen = false;
+        private boolean isMarked = false;
 
         private final Rectangle border = new Rectangle(TILE_SIZE - 2, TILE_SIZE - 2);
         private final Text text = new Text();
+        private final Text markText = new Text("!");
 
         public Tile(int x, int y, boolean hasBomb) {
             this.x = x;
@@ -124,17 +127,35 @@ public class MinesweeperApplication extends Application {
             text.setText(hasBomb ? "X" : "");
             text.setVisible(false);
 
-            getChildren().addAll(border, text);
+            markText.setFont(Font.font(18));
+            markText.setFill(Color.RED);
+            markText.setVisible(false);
+
+            getChildren().addAll(border, text, markText);
 
             setTranslateX(x * TILE_SIZE);
             setTranslateY(y * TILE_SIZE);
 
-            setOnMouseClicked(_ -> open());
+            setOnMouseClicked(event -> {
+                if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                    open();
+                } else if (event.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
+                    toggleMark();
+                }
+            });
+        }
 
+        private void toggleMark(){
+            if(isOpen) return;
+
+            isMarked = !isMarked;
+            markText.setVisible(isMarked);
+
+            border.setStroke(isMarked ? Color.ORANGERED : Color.LIGHTGRAY);
         }
 
         public void open() {
-            if (isOpen) return;
+            if (isOpen || isMarked) return;
 
             //Handle first click to ensure it is an empty tile
             if (firstClick) {
@@ -148,8 +169,8 @@ public class MinesweeperApplication extends Application {
 
             if (hasBomb) {
                 System.out.println("Game Over.");
-                firstClick = true;
                 scene.setRoot(createContent());
+                return;
             }
 
             if (text.getText().isEmpty()) {

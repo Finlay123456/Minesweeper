@@ -58,17 +58,20 @@ To stop the application and remove the containers, use:
 
 ## Contributing
 
-Contributions are welcome! If you have ideas for additional twists or improvements, feel free to submit a pull request.
+Contributions are welcome! If you’d like to improve the game, add features, or enhance the leaderboard functionality, feel free to submit a pull request.
 1. **Fork the repository**.
 2. **Create your feature branch**:
     ```bash
     git checkout -b feature/YourFeature
+    ```
 3. **Commit your changes**:
    ```bash
    git commit -m "Add YourFeature"
+   ```
 4. **Push to the branch**:
    ```bash
    git push origin feature/YourFeature
+   ```
 5. **Open a pull request**.
 
 ## License

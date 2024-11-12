@@ -1,8 +1,7 @@
-module minesweeper.minesweeper {
+module com.finlayprojects.minesweeper {
     requires javafx.controls;
     requires javafx.fxml;
 
-
-    opens minesweeper.minesweeper to javafx.fxml;
-    exports minesweeper.minesweeper;
+    exports com.finlayprojects.minesweeper;
+    opens com.finlayprojects.minesweeper to javafx.fxml;
 }

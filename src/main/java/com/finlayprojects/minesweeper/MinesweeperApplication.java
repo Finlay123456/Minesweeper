@@ -1,4 +1,4 @@
-package minesweeper.minesweeper;
+package com.finlayprojects.minesweeper;
 
 import javafx.application.Application;
 import javafx.geometry.Pos;
